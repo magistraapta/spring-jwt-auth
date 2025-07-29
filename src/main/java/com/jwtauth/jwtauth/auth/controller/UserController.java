@@ -6,15 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jwtauth.jwtauth.auth.dto.PromoteRequest;
 import com.jwtauth.jwtauth.auth.dto.UserDto;
-import com.jwtauth.jwtauth.auth.entity.User;
 import com.jwtauth.jwtauth.auth.service.AuthService;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/v1/user")
 public class UserController {
 
     @Autowired
@@ -42,5 +44,12 @@ public class UserController {
         }
         
         return ResponseEntity.ok("Not authenticated");
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/promote")
+    public ResponseEntity<String> promoteUser(@RequestBody PromoteRequest promoteRequest) {
+        authService.promoteUser(promoteRequest.getId(), promoteRequest.getRole());
+        return ResponseEntity.ok("User promoted successfully");
     }
 }

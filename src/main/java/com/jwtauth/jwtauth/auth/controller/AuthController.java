@@ -1,11 +1,8 @@
 package com.jwtauth.jwtauth.auth.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,8 +14,9 @@ import com.jwtauth.jwtauth.auth.dto.RegisterDto;
 import com.jwtauth.jwtauth.auth.entity.User;
 import com.jwtauth.jwtauth.auth.service.AuthService;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/v1/auth")
 public class AuthController {
     @Autowired
     private AuthService authService;
@@ -37,6 +35,4 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequestDto loginRequestDto) {
         return ResponseEntity.ok(authService.login(loginRequestDto));
     }
-
-    
 }

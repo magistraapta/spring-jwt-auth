@@ -16,7 +16,10 @@ import com.jwtauth.jwtauth.auth.dto.RegisterDto;
 import com.jwtauth.jwtauth.auth.dto.UserDto;
 import com.jwtauth.jwtauth.auth.entity.Role;
 import com.jwtauth.jwtauth.auth.entity.User;
+import com.jwtauth.jwtauth.auth.jwt.JwtService;
 import com.jwtauth.jwtauth.auth.repository.AuthRepository;
+import com.jwtauth.jwtauth.auth.exception.EmailAlreadyExistsException;
+import com.jwtauth.jwtauth.auth.exception.UserNotFoundException;
 
 @Service
 public class AuthService {
@@ -41,10 +44,13 @@ public class AuthService {
             user.setRole(Role.USER);
 
             if (authRepository.findByEmail(registerDto.getEmail()).isPresent()) {
-                throw new RuntimeException("User already exists, try another email");
+                throw new EmailAlreadyExistsException("User already exists, try another email");
             }
 
             return authRepository.save(user);
+        } catch (EmailAlreadyExistsException e) {
+            // Re-throw EmailAlreadyExistsException as is
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Internal server error");
         }
@@ -60,10 +66,13 @@ public class AuthService {
             user.setRole(Role.ADMIN);
 
             if (authRepository.findByEmail(registerDto.getEmail()).isPresent()) {
-                throw new RuntimeException("User already exists, try another email");
+                throw new EmailAlreadyExistsException("User already exists, try another email");
             }
 
             return authRepository.save(user);
+        } catch (EmailAlreadyExistsException e) {
+            // Re-throw EmailAlreadyExistsException as is
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Internal server error");
         }
@@ -73,7 +82,7 @@ public class AuthService {
         try {
             // First, check if user exists
             User user = authRepository.findByEmail(loginRequestDto.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
             // Authenticate the user
             authenticationManager.authenticate(
@@ -88,8 +97,8 @@ public class AuthService {
             return AuthResponse.builder().token(jwtToken).build();
         } catch (BadCredentialsException e) {
             throw new RuntimeException("Invalid credentials");
-        } catch (RuntimeException e) {
-            // Re-throw RuntimeException as is
+        } catch (UserNotFoundException e) {
+            // Re-throw UserNotFoundException as is
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Internal server error: " + e.getMessage());
@@ -107,5 +116,12 @@ public class AuthService {
             throw new RuntimeException("Internal server error");
         }
         
+    }
+
+    public void promoteUser(Long id, Role role) {
+        User user = authRepository.findById(id)
+            .orElseThrow(() -> new UserNotFoundException("User not found"));
+        user.setRole(role);
+        authRepository.save(user);
     }
 }
