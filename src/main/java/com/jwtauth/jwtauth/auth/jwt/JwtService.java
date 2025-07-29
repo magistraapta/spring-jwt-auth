@@ -1,4 +1,4 @@
-package com.jwtauth.jwtauth.auth.service;
+package com.jwtauth.jwtauth.auth.jwt;
 
 import java.security.Key;
 import java.util.Date;
